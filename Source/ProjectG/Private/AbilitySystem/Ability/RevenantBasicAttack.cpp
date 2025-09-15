@@ -1,0 +1,142 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AbilitySystem/Ability/RevenantBasicAttack.h"
+
+#include "GameplayTagG.h"
+#include "AbilitySystem/AbilitySystemComponentG.h"
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "Actor/Projectile.h"
+#include "Character/PlayerCharacter.h"
+
+void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                           const FGameplayEventData* TriggerEventData)
+{
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	UE_LOG(LogTemp, Log, TEXT("ActivateAbility [%s]"), *GetName());
+
+	// 타겟 검색
+	if (ActorInfo->AvatarActor.Get()->Implements<UCombatInterface>())
+	{
+		ICombatInterface::Execute_UpdateTargets(ActorInfo->AvatarActor.Get());
+		ICombatInterface::Execute_UpdatePrimaryTarget(ActorInfo->AvatarActor.Get());
+		TargetActor = ICombatInterface::Execute_GetPrimaryTarget(ActorInfo->AvatarActor.Get());
+		ICombatInterface::Execute_FacePrimaryTarget(ActorInfo->AvatarActor.Get());
+	}
+
+	
+	// 쿨타임, 소모자원 확인. 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	// ASC 확인
+	UAbilitySystemComponentG* ASC = Cast<UAbilitySystemComponentG>(GetAbilitySystemComponentFromActorInfo_Ensured());
+	if (!ASC)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	// #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+	// CreatePlayMontageAndWaitProxy : 비동기작업, Proxy(대리자) 객체 생성, 델리게이트(OnCompleted, OnInterrupted) 가능.
+	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+		this,
+		NAME_None,
+		Info.AnimMontage);
+	
+	if (!MontageTask)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	// 몽타주 콜백 설정 
+	MontageTask->OnCompleted.AddDynamic(this, &URevenantBasicAttack::OnComboEnd);
+	MontageTask->OnInterrupted.AddDynamic(this, &URevenantBasicAttack::OnComboSave);
+	//MontageTask->OnCancelled.AddDynamic(this, &URevenantBasicAttack::OnComboEnd);
+	
+	/** 발사체 생성 발사 */
+	// 스폰 타이밍 설정, AnimNotify 에서 이벤트 보내기(blueprint 설정)
+	// #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+	UAbilityTask_WaitGameplayEvent* WaitFireEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		FGameplayTagG::Get().Ability_BasicAttack);
+	WaitFireEventTask->EventReceived.AddDynamic(this, &URevenantBasicAttack::OnFireEvent);
+	WaitFireEventTask->ReadyForActivation();
+	
+	// 콤보 카운트 증가.
+	int32 NextComboCount = (Info.ComboStep + 1) % Info.MaxComboStep;
+	ASC->TEST_SetAbilityComboCounterValue(Info.AbilityInputID, NextComboCount);
+
+	// 마지막으로 애니메이션 실행.
+	MontageTask->ReadyForActivation(); 
+}
+
+void URevenantBasicAttack::EndAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void URevenantBasicAttack::OnComboSave()
+{
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+
+void URevenantBasicAttack::OnComboEnd()
+{
+	// 공격을 받거나 다른 행동을 취했을때.
+	ResetCombo();
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+
+void URevenantBasicAttack::ResetCombo()
+{
+	if (UAbilitySystemComponentG* ASC = Cast<UAbilitySystemComponentG>(GetAbilitySystemComponentFromActorInfo_Ensured()))
+	{
+		ASC->TEST_SetAbilityComboCounterValue(Info.AbilityInputID, 0); 
+	}
+}
+
+void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
+{
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetCurrentActorInfo()->AvatarActor.Get());
+	if (!OwnerCharacter || !OwnerCharacter->Implements<UCombatInterface>())
+	{
+		return;
+	}
+	const FTransform SocketTransform = ICombatInterface::Execute_GetProjectileSocketTransform(OwnerCharacter, SpawnSocketName);
+	
+	if (TargetActor)
+	{
+		//타겟을 향하는 방향 계산 -> Rotation
+		const FVector Direction = (TargetActor->GetActorLocation() - SocketTransform.GetLocation()).GetSafeNormal();
+		const FRotator SpawnRotation = Direction.Rotation();
+
+		// Projectile Spawn rule
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.Owner = OwnerCharacter;
+		SpawnParameters.Instigator = OwnerCharacter;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		// Projectile Spawn 
+		GetWorld()->SpawnActor<AProjectile>(
+		ProjectileClass,
+		SocketTransform.GetLocation(),
+		SpawnRotation,
+		SpawnParameters);
+	
+		// 다음 Fire 이벤트를 받기위해 태스크 재생성.
+		UAbilityTask_WaitGameplayEvent* WaitFireEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this,
+			FGameplayTagG::Get().Ability_BasicAttack);
+		WaitFireEventTask->EventReceived.AddDynamic(this, &URevenantBasicAttack::OnFireEvent);
+		WaitFireEventTask->ReadyForActivation();
+	}
+}
