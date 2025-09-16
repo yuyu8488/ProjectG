@@ -23,7 +23,6 @@ AProjectile::AProjectile()
 
 	ParticleSystem = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystem"));
 	ParticleSystem->SetupAttachment(RootComponent);
-
 }
 
 void AProjectile::BeginPlay()

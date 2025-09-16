@@ -24,7 +24,7 @@ public:
 	TMap<EAbilityInputID, int32>& GetAbilityComboCounter() {return AbilityComboCounter;}
 
 	UFUNCTION(BlueprintCallable, Category = "Abilities")
-	void TEST_SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value);
+	void SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value);
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Ability.Combo")

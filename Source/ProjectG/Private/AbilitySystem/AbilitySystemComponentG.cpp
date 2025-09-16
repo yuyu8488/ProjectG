@@ -149,7 +149,7 @@ void UAbilitySystemComponentG::AbilityInputIDHeld(const EAbilityInputID& InputID
 	}
 }
 
-void UAbilitySystemComponentG::TEST_SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value)
+void UAbilitySystemComponentG::SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value)
 {
 	AbilityComboCounter[AbilityInputID] = Value;
 }
