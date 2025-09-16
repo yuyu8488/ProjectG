@@ -64,13 +64,24 @@ void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	//MontageTask->OnCancelled.AddDynamic(this, &URevenantBasicAttack::OnComboEnd);
 	
 
-	//TODO: 애니메이션 진행중>> 특정 시간 이상일때, 이동키를 누르면 이동이 되게끔 하기. 
-	// 특정 타임(Window태그가 없을때) >> 애니메이션을 종료하고 이동이 가능하게끔. (현재 몽타주가 RootMotion으로 설정되어있음)
+	//TODO: 애니메이션 진행중>> 특정 시간 이상일때, 이동키를 누르면 이동이 되게끔 하기. 	
+	
+	/*
+	 * 그냥 Character에 bool변수로 bCanMove 설정 >> 움직임 제어하는걸로 함
+	 */
+
 
 	// #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
-	//UAbilityTask_WaitInputPress* InputTask = UAbilityTask_WaitInputPress::Create
-
-
+	
+	//UAbilityTask_WaitInputPress* InputTask = UAbilityTask_WaitInputPress::WaitInputPress(this, true);
+	//InputTask->OnPress.AddUnique()
+	
+	
+	//InputTask->OnPress.AddDynamic(this, &UMyGameplayAbility::OnInputPressed);
+	//WaitInputPressTask->ReadyForActivation();
+	
+	//UAbilityTask_WaitInputPress* InputTask;
+	//InputTask->WaitInputPress;
 	//	UAbilityTask_WaitInputPress::CreateWaitInputPressProxy(this, false); // bTestInitialState=false
 	//if (InputTask)
 	//{

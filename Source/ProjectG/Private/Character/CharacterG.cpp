@@ -65,7 +65,6 @@ FTransform ACharacterG::GetProjectileSocketTransform_Implementation(FName InSock
 	return GetMesh()->GetSocketTransform(InSocketName);
 }
 
-
 void ACharacterG::BeginPlay()
 {
 	Super::BeginPlay();

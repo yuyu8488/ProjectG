@@ -24,6 +24,8 @@ void UAnimNotifyState_ComboWindow::NotifyBegin(USkeletalMeshComponent* MeshComp,
 	{
 		if (ACharacterG* OwnerCharacter = Cast<ACharacterG>(OwnerActor))
 		{
+			OwnerCharacter->SetCanMove(false);
+
 			if (UAbilitySystemComponentG* ASC = Cast<UAbilitySystemComponentG>(OwnerCharacter->GetAbilitySystemComponent()))
 			{
 				ASC->AddLooseGameplayTag(WindowTag);
@@ -41,6 +43,8 @@ void UAnimNotifyState_ComboWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, U
 	{
 		if (ACharacterG* OwnerCharacter = Cast<ACharacterG>(OwnerActor))
 		{
+			OwnerCharacter->SetCanMove(true);
+
 			if (UAbilitySystemComponentG* ASC = Cast<UAbilitySystemComponentG>(OwnerCharacter->GetAbilitySystemComponent()))
 			{
 				ASC->RemoveLooseGameplayTag(WindowTag);

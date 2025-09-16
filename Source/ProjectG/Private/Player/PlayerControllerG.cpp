@@ -84,6 +84,7 @@ void APlayerControllerG::AbilityActionInputHeld(EAbilityInputID AbilityInputID)
 void APlayerControllerG::Move(const struct FInputActionValue& Value)
 {
 	APlayerCharacter* ControlledCharacter = GetPawn<APlayerCharacter>();
+
 	const FVector2D Input = Value.Get<FVector2D>();
 	
 	if (!ControlledCharacter || Input.IsNearlyZero()) return;
@@ -97,9 +98,9 @@ void APlayerControllerG::Move(const struct FInputActionValue& Value)
 	const FVector WorldSpaceInputDirection = (Forward * Input.Y + Right * Input.X).GetSafeNormal();
 	ControlledCharacter->SetLastInputDirection(WorldSpaceInputDirection);
 
-	// 애초에 공격몽타주가 
-	// if (ControlledCharacter->GetAbilitySystemComponent()->HasMatchingGameplayTag(FGameplayTagG::Get().Character_State_Attacking)) return;
-	
+	// (이동 제약)
+	if (ControlledCharacter->GetCanMove() == false) return;
+
 	// 3. 이동 처리
 	ControlledCharacter->AddMovementInput(Forward, Input.Y);
 	ControlledCharacter->AddMovementInput(Right, Input.X);
