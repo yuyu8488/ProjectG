@@ -90,8 +90,8 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 	AActor* BestTarget = nullptr;
 	float BestScore = -1.f;
 
-	// 이동 입력이 없을때 x(속도가 0일때로 하면 안됨, 몽타주가 재생중엔 속도가 0이라서),
-	// 1.(기존 타겟 우선, 없다면 캐릭터의 정면 방향)
+
+	//TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
 	if (LastInputDirection == FVector::ZeroVector)
 	{
 		//const FVector NormalizedForwardDirection = GetActorForwardVector().GetSafeNormal();
@@ -112,19 +112,43 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			if (AlignmentDot < AlignmentForTargeting) continue;
 
 			// 거리가 멀어질수록 1에서 0에 가까워지는 점수 계산
-			// 최종 점수 계산 (거리 + 입력방향) * (타겟인경우)
+			// 최종 점수 계산 (거리 + 입력방향) * (Primary 타겟인경우)
 			const float DistanceScore = 1.f - (DistanceToEnemy / TargetSearchRadius);
-			const float EnemyScore = (Enemy == PrimaryCombatTarget.Get()) ?
+			const float EnemyScore = (Enemy == PrimaryCombatTarget) ?
 			((DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight)) * (1 + TargetSearchPrimaryTargetWeight)
-				:(DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight);
+				: (DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight);
 
 			if (EnemyScore > BestScore)
 			{
 				BestScore = EnemyScore;
 				BestTarget = Enemy;
-			} 
+			}
+
+			{			
+				FString DebugText = FString::Printf(
+					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
+					DistanceScore,AlignmentDot,EnemyScore);
+				FColor DebugTextColor = FColor::White;
+				if (Enemy == PrimaryCombatTarget.Get())
+				{
+					DebugText += TEXT("\n** PRIMARY TARGET **");
+					DebugTextColor =FColor::Red; 
+				}
+				
+				DrawDebugString(
+					GetWorld(),
+					Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
+					DebugText,
+					nullptr,
+					DebugTextColor,
+					3.0f,
+					false,
+					1.5f);
+			}
 		}
 		PrimaryCombatTarget = BestTarget;
+
+		
 	}
 	
 	// 2.이동 입력이 있을때, 점수 기반으로 우선타겟을 찾는다.
@@ -150,18 +174,39 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			// 거리가 멀어질수록 1에서 0에 가까워지는 점수 계산
 			// 최종 점수 계산 (거리 + 입력방향) * (타겟인경우)
 			const float DistanceScore = 1.f - (DistanceToEnemy / TargetSearchRadius);
-			const float EnemyScore = (Enemy == PrimaryCombatTarget.Get()) ?
+			const float EnemyScore = (Enemy == PrimaryCombatTarget) ?
 			((DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight)) * (1 + TargetSearchPrimaryTargetWeight)
 				:(DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight);
 
+			{			
+				FString DebugText = FString::Printf(
+					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
+					DistanceScore,AlignmentDot,EnemyScore);
+				FColor DebugTextColor = FColor::White;
+				if (Enemy == PrimaryCombatTarget)
+				{
+					DebugText += TEXT("\n** PRIMARY TARGET **");
+					DebugTextColor =FColor::Red; 
+				}
+				
+				DrawDebugString(
+					GetWorld(),
+					Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
+					DebugText,
+					nullptr,
+					DebugTextColor,
+					3.0f,
+					false,
+					1.5f);
+			}
 
-			/*====================테스트용 텍스트=================*/
+			/*====================점수 테스트용 텍스트=================*/
 			/*{			
 				FString DebugText = FString::Printf(
 					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
 					DistanceScore,AlignmentDot,EnemyScore);
 				FColor DebugTextColor = FColor::White;
-				if (Enemy == PrimaryEnemyTarget.Get())
+				if (Enemy == PrimaryCombatTarget)
 				{
 					DebugText += TEXT("\n** PRIMARY TARGET **");
 					DebugTextColor =FColor::Red; 
@@ -177,7 +222,7 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 					false,
 					1.5f);
 			}*/
-			/*====================테스트용 텍스트=================*/
+			/*====================점수 테스트용 텍스트=================*/
 		
 			if (EnemyScore > BestScore)
 			{

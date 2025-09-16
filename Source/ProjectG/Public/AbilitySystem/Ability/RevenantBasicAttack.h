@@ -20,7 +20,7 @@ protected:
 
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
-
+	
 	virtual void OnComboSave() override;
 	virtual void OnComboEnd() override;
 	virtual void ResetCombo() override;

@@ -36,10 +36,12 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class USpringArmComponent> SpringArm;
 	
-	// 타겟 지정시 입력방향 추적
+	// Move Input 추적
 	UPROPERTY()
 	FVector LastInputDirection = FVector::ZeroVector;
+
 	
+	//TODO: TargetSearch 구조체로 정리하기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat.Target.Search", meta=(AllowPrivateAccess="true"))
 	float TargetSearchInterval = 0.2f;
 

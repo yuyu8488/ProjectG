@@ -32,10 +32,6 @@ public:
 	virtual FTransform GetProjectileSocketTransform_Implementation(FName InSocketName) override;
 	// ~ End Combat Interface
 	
-	// 임시
-	bool GetCanMove() { return bCanMove; }
-	void SetCanMove(bool InState) { bCanMove = InState; }
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilitySystem(); //InitAbilityActorInfo();
@@ -54,16 +50,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="AbilitySystem.Attribute")
 	TSubclassOf<UGameplayEffect> VitalAttributeEffect;
 
-	// 적 개체를 인식했을때, 데미지를 줬을때. 데미지받을때(환경데미지 제외)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
-	bool bInCombat;
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
-	bool bCanMove = true;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat.Target", meta=(AllowPrivateAccess="true"))
 	TArray<TObjectPtr<AActor>> CombatTargets;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat.Target", meta=(AllowPrivateAccess="true"))
 	TObjectPtr<AActor> PrimaryCombatTarget;
+	
+	// 적 개체를 인식했을때, 데미지를 줬을때. 데미지받을때(환경데미지 제외)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Combat", meta=(AllowPrivateAccess="true"))
+	bool bInCombat;
 };

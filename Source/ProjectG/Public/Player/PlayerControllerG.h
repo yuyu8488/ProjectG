@@ -20,7 +20,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
-	
 private:
 	void AbilityActionInputPressed(EAbilityInputID AbilityInputID);
 	void AbilityActionInputReleased(EAbilityInputID AbilityInputID);

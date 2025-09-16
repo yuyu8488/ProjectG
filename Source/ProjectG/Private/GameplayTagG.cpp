@@ -29,6 +29,8 @@ void FGameplayTagG::InitNativeGameplayTags()
 		FName("Character.State.Walking"));
 	GameplayTags.Character_State_Attacking = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Character.State.Attacking"));
+	GameplayTags.Character_State_AttackCancellable = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Character.State.AttackCancellable"));
 
 
 	// Ability Combo

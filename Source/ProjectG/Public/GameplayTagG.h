@@ -25,6 +25,7 @@ public:
 	FGameplayTag Character_State_Idle;
 	FGameplayTag Character_State_Walking;
 	FGameplayTag Character_State_Attacking;
+	FGameplayTag Character_State_AttackCancellable;
 
 	// Ability
 	FGameplayTag Ability_Attack_Once;

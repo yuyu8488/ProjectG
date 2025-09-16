@@ -98,9 +98,6 @@ void APlayerControllerG::Move(const struct FInputActionValue& Value)
 	const FVector WorldSpaceInputDirection = (Forward * Input.Y + Right * Input.X).GetSafeNormal();
 	ControlledCharacter->SetLastInputDirection(WorldSpaceInputDirection);
 
-	// (이동 제약)
-	if (ControlledCharacter->GetCanMove() == false) return;
-
 	// 3. 이동 처리
 	ControlledCharacter->AddMovementInput(Forward, Input.Y);
 	ControlledCharacter->AddMovementInput(Right, Input.X);
