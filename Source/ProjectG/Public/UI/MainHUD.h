@@ -25,6 +25,9 @@ public:
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams& Params);
 
 	
+protected:
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY()
 	TObjectPtr<UUserWidgetG> OverlayWidget;

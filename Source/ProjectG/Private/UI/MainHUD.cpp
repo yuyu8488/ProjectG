@@ -33,3 +33,9 @@ UOverlayWidgetController* AMainHUD::GetOverlayWidgetController(const FWidgetCont
 	}
 	return OverlayWidgetController;
 }
+
+void AMainHUD::BeginPlay()
+{
+	// PC,PS,ASC,AS 를 초기화 하려고 PlayerController에서 정보를 가져와서 했는디..
+
+}

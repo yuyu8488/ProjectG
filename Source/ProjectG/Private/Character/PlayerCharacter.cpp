@@ -92,6 +92,15 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 
 
 	//TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
+	// 이동입력이 없을때는 Allignment 점수계산은 빼는게 좋을듯?
+
+	/* 이동입력이 없다
+	 * 1. Primary Target이 존재하는가? 
+	 *  ->(1) 존재한다. >> 
+	 *  ->(2) 존재하지 않는다. >> 
+	 * 
+	 */
+
 	if (LastInputDirection == FVector::ZeroVector)
 	{
 		//const FVector NormalizedForwardDirection = GetActorForwardVector().GetSafeNormal();
@@ -141,7 +150,7 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 					DebugText,
 					nullptr,
 					DebugTextColor,
-					3.0f,
+					1.0f,
 					false,
 					1.5f);
 			}
@@ -155,7 +164,7 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 	else
 	{
 		// 입력방향은 Controller에서 월드 공간으로 계산했음 -> 정규화
-		const FVector NormalizedInputDirection = LastInputDirection.GetSafeNormal(); 
+		const FVector NormalizedInputDirection = LastInputDirection.GetSafeNormal();
 	
 		for (AActor* Enemy : CombatTargets)
 		{ 
@@ -195,12 +204,12 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 					DebugText,
 					nullptr,
 					DebugTextColor,
-					3.0f,
+					1.0f,
 					false,
 					1.5f);
 			}
 
-			/*====================점수 테스트용 텍스트=================*/
+			/*====================점수 테스트용 텍스트 출력=================*/
 			/*{			
 				FString DebugText = FString::Printf(
 					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
@@ -218,11 +227,11 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 					DebugText,
 					nullptr,
 					DebugTextColor,
-					3.0f,
+					1.0f,
 					false,
 					1.5f);
 			}*/
-			/*====================점수 테스트용 텍스트=================*/
+			/*====================점수 테스트용 텍스트 출력=================*/
 		
 			if (EnemyScore > BestScore)
 			{
@@ -260,6 +269,8 @@ void APlayerCharacter::InitAbilitySystem()
 	AbilitySystemComponent = PlayerStateG->GetAbilitySystemComponent();
 	AttributeSet = PlayerStateG->GetAttributeSet();
 	
+
+	//TODO: MainHUD가 Begin 할때 InitOverlay하도록 수정.
 	if (APlayerControllerG* PlayerControllerG = GetController<APlayerControllerG>())
 	{
 		if (!PlayerControllerG->IsLocalController()) return;
