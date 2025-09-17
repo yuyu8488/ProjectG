@@ -39,7 +39,6 @@ private:
 	// Move Input 추적
 	UPROPERTY()
 	FVector LastInputDirection = FVector::ZeroVector;
-
 	
 	//TODO: TargetSearch 구조체로 정리하기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat.Target.Search", meta=(AllowPrivateAccess="true"))

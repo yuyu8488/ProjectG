@@ -83,7 +83,6 @@ void ACharacterG::InitCharacterAbility() const
 	ASC->InitAbility(StartupAbilities);
 }
 
-
 void ACharacterG::InitCharacterAttributes() const
 {
 	UAbilitySystemComponentG* ASC = CastChecked<UAbilitySystemComponentG>(AbilitySystemComponent);

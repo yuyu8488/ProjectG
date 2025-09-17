@@ -43,27 +43,22 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-
-	// ASC->InitAbilityActorInfo,
-	// 서버에서 초기화
-	InitAbilitySystem();
 	
-	/** ASC->InitAbility */
+	InitAbilitySystem();
 	InitCharacterAbility();
 	InitCharacterAttributes();
 }
 
 void APlayerCharacter::OnRep_PlayerState()
 {
-	// 멀티환경에서 클라이언트도 AbilitySystemComponent를 초기화가 되도록 
 	Super::OnRep_PlayerState();
 
+	// (Client) 캐릭터 
 	InitAbilitySystem();
 }
 
 void APlayerCharacter::UpdateTargets_Implementation()
 {
-	// 성능을 위해 이전에 찾은 목록은 비움? 
 	CombatTargets.Empty();
 
 	// 주변 일정반경에 있는 모든 적을 찾음
@@ -89,10 +84,9 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 {	
 	AActor* BestTarget = nullptr;
 	float BestScore = -1.f;
-
-
+	
 	//TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
-	// 이동입력이 없을때는 Allignment 점수계산은 빼는게 좋을듯?
+	// 이동입력이 없을때는 Alignment 점수계산은 빼는게 좋을듯?
 
 	/* 이동입력이 없다
 	 * 1. Primary Target이 존재하는가? 
@@ -156,8 +150,6 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			}
 		}
 		PrimaryCombatTarget = BestTarget;
-
-		
 	}
 	
 	// 2.이동 입력이 있을때, 점수 기반으로 우선타겟을 찾는다.
@@ -255,31 +247,14 @@ void APlayerCharacter::InitAbilitySystem()
 	 * State에 AbilitySystemComponent와 AttributeSet를 두는 이유
 	 * 캐릭터가 죽으면 정보가 사라지지만, State에 저장된 정보는 세션종료시까지 유지됨.
 	 */
-	
-	
-	/* 멀티환경에서 PlayerController가 Null 오류
-	 * LocalController가 아닌 다른 플레이어의 컨트롤도 가져오기때문
-	 */
-	
+		
 	APlayerStateG* PlayerStateG = GetPlayerState<APlayerStateG>();
 	if (PlayerStateG == nullptr) return;
 	PlayerStateG->GetAbilitySystemComponent()->InitAbilityActorInfo(PlayerStateG, this);
-	
-	// ASC,AS Caching
+
+	// ASC, AS caching 
 	AbilitySystemComponent = PlayerStateG->GetAbilitySystemComponent();
 	AttributeSet = PlayerStateG->GetAttributeSet();
-	
-
-	//TODO: MainHUD가 Begin 할때 InitOverlay하도록 수정.
-	if (APlayerControllerG* PlayerControllerG = GetController<APlayerControllerG>())
-	{
-		if (!PlayerControllerG->IsLocalController()) return;
-		AMainHUD* MainHUD = Cast<AMainHUD>(PlayerControllerG->GetHUD());
-		if (MainHUD)
-		{
-			MainHUD->InitOverlay(PlayerControllerG,PlayerStateG,AbilitySystemComponent,AttributeSet);
-		}
-	}
 }
 
 

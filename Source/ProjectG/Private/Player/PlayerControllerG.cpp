@@ -8,6 +8,7 @@
 #include "Character/PlayerCharacter.h"
 #include "Input/EnhancedInputComponentG.h"
 #include "Player/PlayerStateG.h"
+#include "UI/MainHUD.h"
 
 APlayerControllerG::APlayerControllerG()
 {
@@ -37,6 +38,22 @@ void APlayerControllerG::SetupInputComponent()
 		&APlayerControllerG::AbilityActionInputPressed,
 		&APlayerControllerG::AbilityActionInputReleased,
 		&APlayerControllerG::AbilityActionInputHeld);
+}
+
+void APlayerControllerG::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	APlayerStateG* PS = GetPlayerState<APlayerStateG>();
+	if (PS)
+	{
+		UE_LOG(LogTemp, Log, TEXT("PlayerController::OnRep_PlayerState(): %s"), *PS->GetName());
+
+		UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+		UAttributeSet* AS = PS->GetAttributeSet();
+
+		GetHUD<AMainHUD>()->InitOverlay(this, PS, ASC, AS);
+	}
 }
 
 void APlayerControllerG::AbilityActionInputPressed(EAbilityInputID AbilityInputID)

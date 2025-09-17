@@ -34,7 +34,7 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void InitAbilitySystem(); //InitAbilityActorInfo();
+	virtual void InitAbilitySystem();
 	void InitCharacterAbility() const;
 	void InitCharacterAttributes() const;
 	

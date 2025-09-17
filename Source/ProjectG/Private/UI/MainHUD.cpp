@@ -3,24 +3,15 @@
 
 #include "UI/MainHUD.h"
 
+
+#include "Player/PlayerControllerG.h"
+#include "Player/PlayerStateG.h"
 #include "UI/Widget/UserWidgetG.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 
-void AMainHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+AMainHUD::AMainHUD()
 {
-	check(OverlayWidgetClass);
-	check(OverlayWidgetControllerClass);
 	
-	UUserWidgetG* Widget = CreateWidget<UUserWidgetG>(GetWorld(), OverlayWidgetClass);
-	OverlayWidget = Widget;
-	
-	const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);
-	UOverlayWidgetController* Controller = GetOverlayWidgetController(WidgetControllerParams);
-	
-	OverlayWidget->AssignWidgetController(Controller);
-	Controller->BroadcastInitialValues();
-
-	Widget->AddToViewport();	
 }
 
 UOverlayWidgetController* AMainHUD::GetOverlayWidgetController(const FWidgetControllerParams& Params)
@@ -34,8 +25,24 @@ UOverlayWidgetController* AMainHUD::GetOverlayWidgetController(const FWidgetCont
 	return OverlayWidgetController;
 }
 
+void AMainHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
+{
+	check(OverlayWidgetControllerClass);
+	
+	const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);
+	UOverlayWidgetController* Controller = GetOverlayWidgetController(WidgetControllerParams);
+	
+	OverlayWidget->AssignWidgetController(Controller);
+	Controller->BroadcastInitialValues();
+}
+
 void AMainHUD::BeginPlay()
 {
-	// PC,PS,ASC,AS 를 초기화 하려고 PlayerController에서 정보를 가져와서 했는디..
-
+	// OverlayWidget생성.
+	check(OverlayWidgetClass);
+	OverlayWidget = CreateWidget<UUserWidgetG>(GetWorld(), OverlayWidgetClass);
+	OverlayWidget->AddToViewport();	
 }
+
+
+

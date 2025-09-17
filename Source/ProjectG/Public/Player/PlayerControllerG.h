@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PlayerControllerG.generated.h"
 
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams()
 
 UCLASS()
 class PROJECTG_API APlayerControllerG : public APlayerController
@@ -19,6 +20,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void OnRep_PlayerState() override;
 
 private:
 	void AbilityActionInputPressed(EAbilityInputID AbilityInputID);

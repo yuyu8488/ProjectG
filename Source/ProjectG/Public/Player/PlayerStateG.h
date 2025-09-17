@@ -6,9 +6,6 @@
 #include "GameFramework/PlayerState.h"
 #include "PlayerStateG.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class PROJECTG_API APlayerStateG : public APlayerState
 {
@@ -16,7 +13,7 @@ class PROJECTG_API APlayerStateG : public APlayerState
 
 public:
 	APlayerStateG();
-	class UAbilitySystemComponent* GetAbilitySystemComponent()  const {return AbilitySystemComponent;}
+	class UAbilitySystemComponent* GetAbilitySystemComponent() const {return AbilitySystemComponent;}
 	class UAttributeSet* GetAttributeSet() const {return AttributeSet;}
 	
 protected:
@@ -25,6 +22,4 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
-
-	
 };
