@@ -78,8 +78,12 @@ void ACharacterG::InitAbilitySystem()
 void ACharacterG::InitCharacterAbility() const
 {
 	UAbilitySystemComponentG* ASC = CastChecked<UAbilitySystemComponentG>(AbilitySystemComponent);
-	if (!HasAuthority()) return;
+
 	if (StartupAbilities.IsEmpty()) return;
+
+	//TODO: 서버 Client 실행 체크하기
+	if (!HasAuthority()) return; 	
+
 	ASC->InitAbility(StartupAbilities);
 }
 

@@ -6,6 +6,8 @@
 #include "AbilitySystem/AbilityInputID.h"
 #include "AbilitySystem/GameplayAbilityG.h"
 
+GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeTimeProps) const;
+
 void UAbilitySystemComponentG::OnAbilityActorInfoSet()
 {
 }
@@ -44,6 +46,7 @@ void UAbilitySystemComponentG::InitAbility(const TArray<TSubclassOf<UGameplayAbi
 		// 3. 어빌리티 등록
 		GiveAbility(AbilitySpec);
 
+		//TODO: 서버에서만 추가되고 클라이언트에 추가가 안됨. 서버에 추가할 필요가 있나? 
 		// 4. 콤보공격인 경우 TMap 등록
 		if (DefaultAbility->Info.bIsCombo)
 		{
@@ -70,8 +73,10 @@ void UAbilitySystemComponentG::AbilityInputIDPressed(const EAbilityInputID& Inpu
 		
 			if (MatchingSpecs.Num() == 0) break;
 
+
+			// @@@@@@@@@@@@@@@@@@@@@@@@@@@ 
 			// 동일한 InputID를 가진 Ability 중에서 발동할 어빌리티 선별
-			const int32 ComboCount = *AbilityComboCounter.Find(Cast<UGameplayAbilityG>(MatchingSpecs[0]->Ability)->Info.AbilityInputID);
+			const int32 ComboCount = *AbilityComboCounter.Find(InputID);
 			FGameplayAbilitySpec* SpecToActivate = MatchingSpecs[ComboCount];
 		
 			AbilitySpecInputPressed(*SpecToActivate);
@@ -151,5 +156,6 @@ void UAbilitySystemComponentG::AbilityInputIDHeld(const EAbilityInputID& InputID
 
 void UAbilitySystemComponentG::SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value)
 {
+	// 배열로 바꿔도 될듯? 
 	AbilityComboCounter[AbilityInputID] = Value;
 }

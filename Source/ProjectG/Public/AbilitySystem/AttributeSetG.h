@@ -44,6 +44,7 @@ using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateU
  *	캐릭터 상태 
  *  최대생명력, 현재체력, 특수스킬게이지(마나),  
  */
+
 UCLASS()
 class PROJECTG_API UAttributeSetG : public UAttributeSet
 {
