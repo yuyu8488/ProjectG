@@ -7,7 +7,6 @@
 #include "AbilitySystem/AbilitySystemComponentG.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "Abilities/Tasks/AbilityTask_WaitGameplayTag.h"
 #include "Actor/Projectile.h"
 #include "Character/PlayerCharacter.h"
 
@@ -112,35 +111,38 @@ void URevenantBasicAttack::ResetCombo()
 
 void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 {
+	//서버에서만 스폰
+	if (!GetAvatarActorFromActorInfo()->HasAuthority()) return;
+	
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetCurrentActorInfo()->AvatarActor.Get());
 	if (!OwnerCharacter || !OwnerCharacter->Implements<UCombatInterface>())
 	{
 		return;
 	}
-	const FTransform SocketTransform = ICombatInterface::Execute_GetProjectileSocketTransform(OwnerCharacter, SpawnSocketName);
-	
-	if (TargetActor)
+
+	// TODO: Projectile Spawn 설정 다시
+	if (TargetActor@@@@@@@@@@@@@@@@@)
 	{
-		//타겟을 향하는 방향 계산 -> Rotation
-		const FVector Direction = (TargetActor->GetActorLocation() - SocketTransform.GetLocation()).GetSafeNormal();
-		const FRotator SpawnRotation = Direction.Rotation();
+		const FVector SocketLocation = ICombatInterface::Execute_GetProjectileSocketLocation(OwnerCharacter, SpawnSocketName);
+		FRotator Rotation = (TargetActor->GetActorLocation() - SocketLocation).Rotation();
 
-		// Projectile Spawn rule
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.Owner = OwnerCharacter;
-		SpawnParameters.Instigator = OwnerCharacter;
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		// Projectile Spawn 
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(
-		ProjectileClass,
-		SocketTransform.GetLocation(),
-		SpawnRotation,
-		SpawnParameters);
+		FTransform SpawnTransform;
+		SpawnTransform.SetLocation(SocketLocation);
+		SpawnTransform.SetRotation(Rotation.Quaternion());		
 		
-		// 발사체에 DamageEffectParmas 설정.
+
+		AProjectile* Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(
+		ProjectileClass,
+		SpawnTransform,
+		GetOwningActorFromActorInfo(),
+		Cast<APawn>(GetOwningActorFromActorInfo()),
+		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		
+		// 발사체에 DamageEffectParams 설정.
 		FDamageEffectParams ProjectileDamageEffectParams = MakeDamageEffectParamsFromClassDefaults(TargetActor, FGameplayTagG::Get().Ability_BasicAttack);
 		Projectile->SetDamageEffectParams(ProjectileDamageEffectParams);
+
+		Projectile->FinishSpawning(SpawnTransform);
 	
 		// 다음 Fire 이벤트를 받기위해 테스크 재생성.
 		UAbilityTask_WaitGameplayEvent* WaitFireEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(

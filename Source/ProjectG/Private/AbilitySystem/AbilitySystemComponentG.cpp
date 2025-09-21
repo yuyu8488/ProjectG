@@ -5,8 +5,15 @@
 
 #include "AbilitySystem/AbilityInputID.h"
 #include "AbilitySystem/GameplayAbilityG.h"
+#include "Net/UnrealNetwork.h"
 
-GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeTimeProps) const;
+
+void UAbilitySystemComponentG::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UAbilitySystemComponentG, AbilityComboCounter);
+}
 
 void UAbilitySystemComponentG::OnAbilityActorInfoSet()
 {
@@ -45,16 +52,15 @@ void UAbilitySystemComponentG::InitAbility(const TArray<TSubclassOf<UGameplayAbi
 
 		// 3. 어빌리티 등록
 		GiveAbility(AbilitySpec);
-
-		//TODO: 서버에서만 추가되고 클라이언트에 추가가 안됨. 서버에 추가할 필요가 있나? 
-		// 4. 콤보공격인 경우 TMap 등록
+		
+		// 4. 콤보공격인 경우 AbilityComboCounter에 추가
 		if (DefaultAbility->Info.bIsCombo)
 		{
-			AbilityComboCounter.Add(DefaultAbility->Info.AbilityInputID, 0);
+			AbilityComboCounter.AddUnique(FAbilityComboInfo(DefaultAbility->Info.AbilityInputID, 0));
 		}
 	}
 }
-
+ 
 void UAbilitySystemComponentG::AbilityInputIDPressed(const EAbilityInputID& InputID)
 {
 	switch (InputID)
@@ -72,12 +78,19 @@ void UAbilitySystemComponentG::AbilityInputIDPressed(const EAbilityInputID& Inpu
 			}
 		
 			if (MatchingSpecs.Num() == 0) break;
-
-
-			// @@@@@@@@@@@@@@@@@@@@@@@@@@@ 
+			
 			// 동일한 InputID를 가진 Ability 중에서 발동할 어빌리티 선별
-			const int32 ComboCount = *AbilityComboCounter.Find(InputID);
-			FGameplayAbilitySpec* SpecToActivate = MatchingSpecs[ComboCount];
+
+			int32 ComboStep = 0;
+			for (auto& Ability : AbilityComboCounter)
+			{
+				if (Ability.AbilityInputID == InputID)
+				{
+					ComboStep = Ability.ComboStep;
+				}
+			}
+
+			FGameplayAbilitySpec* SpecToActivate = MatchingSpecs[ComboStep];
 		
 			AbilitySpecInputPressed(*SpecToActivate);
 			if (SpecToActivate->IsActive())
@@ -154,8 +167,13 @@ void UAbilitySystemComponentG::AbilityInputIDHeld(const EAbilityInputID& InputID
 	}
 }
 
-void UAbilitySystemComponentG::SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value)
+void UAbilitySystemComponentG::SetAbilityComboCounterValue(EAbilityInputID InAbilityInputID, int32 InComboStep)
 {
-	// 배열로 바꿔도 될듯? 
-	AbilityComboCounter[AbilityInputID] = Value;
+	for (auto& Ability : AbilityComboCounter)
+	{
+		if (Ability.AbilityInputID == InAbilityInputID)
+		{
+			Ability.ComboStep = InComboStep;
+		}
+	}
 }

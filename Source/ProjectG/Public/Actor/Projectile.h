@@ -19,7 +19,8 @@ class PROJECTG_API AProjectile : public AActor
 public:	
 	AProjectile();
 
-	void SetDamageEffectParams(FDamageEffectParams InDamageEffectParmas) { DamageEffectParams = InDamageEffectParmas;	 }
+	UFUNCTION()
+	void SetDamageEffectParams(const FDamageEffectParams& InDamageEffectParams) { DamageEffectParams = InDamageEffectParams;}
 
 protected:
 	virtual void BeginPlay() override;

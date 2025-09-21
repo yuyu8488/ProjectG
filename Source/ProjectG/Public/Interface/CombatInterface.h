@@ -41,7 +41,7 @@ public:
 	void FacePrimaryTarget();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	FTransform GetProjectileSocketTransform(FName InSocketName);
+	FVector GetProjectileSocketLocation(FName InSocketName);
 
 	
 };

@@ -43,8 +43,10 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	
+
+	// 서버측 초기화 
 	InitAbilitySystem();
+	
 	InitCharacterAbility();
 	InitCharacterAttributes();
 }
@@ -53,8 +55,9 @@ void APlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 
-	// (Client) 캐릭터 
+	// 클라이언트측 초기화
 	InitAbilitySystem();
+
 }
 
 void APlayerCharacter::UpdateTargets_Implementation()
@@ -250,6 +253,7 @@ void APlayerCharacter::InitAbilitySystem()
 		
 	APlayerStateG* PlayerStateG = GetPlayerState<APlayerStateG>();
 	if (PlayerStateG == nullptr) return;
+	
 	PlayerStateG->GetAbilitySystemComponent()->InitAbilityActorInfo(PlayerStateG, this);
 
 	// ASC, AS caching 

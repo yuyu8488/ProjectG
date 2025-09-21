@@ -7,6 +7,25 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemComponentG.generated.h"
 
+USTRUCT(BlueprintType)
+struct FAbilityComboInfo
+{
+	GENERATED_BODY()
+public:
+	FAbilityComboInfo() : AbilityInputID(EAbilityInputID::None), ComboStep(0) {};
+	FAbilityComboInfo(const EAbilityInputID InAbilityInputID, const int32 InComboStep) : AbilityInputID(InAbilityInputID), ComboStep(InComboStep) {}
+
+	bool operator==(const FAbilityComboInfo& Other) const
+	{
+		return AbilityInputID == Other.AbilityInputID;
+	}
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EAbilityInputID AbilityInputID = EAbilityInputID::None;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 ComboStep = 0;
+};
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTG_API UAbilitySystemComponentG : public UAbilitySystemComponent
@@ -14,8 +33,8 @@ class PROJECTG_API UAbilitySystemComponentG : public UAbilitySystemComponent
 	GENERATED_BODY()
 
 public:
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeTimeProps) const;
-
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	void OnAbilityActorInfoSet();
 	void InitAbility(const TArray<TSubclassOf<UGameplayAbility>>& AbilitiesToGrant); 
 	
@@ -23,17 +42,12 @@ public:
 	void AbilityInputIDReleased(const EAbilityInputID& InputID);
 	void AbilityInputIDHeld(const EAbilityInputID& InputID);
 
-	TMap<EAbilityInputID, int32>& GetAbilityComboCounter() {return AbilityComboCounter;}
+	TArray<FAbilityComboInfo>& GetAbilityComboCounter() {return AbilityComboCounter;}
 
 	UFUNCTION(BlueprintCallable, Category = "Abilities")
-	void SetAbilityComboCounterValue(EAbilityInputID AbilityInputID, int32 Value);
-	
+	void SetAbilityComboCounterValue(EAbilityInputID InAbilityInputID, int32 InComboStep);
+
 protected:
-	// TMap에 커스텀 자료형이 들어갈 경우 추가 작업이 필요함 -> NetSerialize
-	// Enum은 내부적으로 uint8이나 int32같은 정수로취급 문제x 
-
-
-	//TODO: 음... FastArraySerializer 조사
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Ability.Combo")
-	TMap<EAbilityInputID, int32> AbilityComboCounter;
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category = "Ability.Combo")
+	TArray<FAbilityComboInfo> AbilityComboCounter;
 };

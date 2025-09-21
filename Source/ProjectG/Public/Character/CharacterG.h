@@ -29,12 +29,14 @@ public:
 	virtual void UpdatePrimaryTarget_Implementation() override;
 	virtual AActor* GetPrimaryTarget_Implementation() override;
 	virtual void FacePrimaryTarget_Implementation() override;
-	virtual FTransform GetProjectileSocketTransform_Implementation(FName InSocketName) override;
+	virtual FVector GetProjectileSocketLocation_Implementation(FName InSocketName) override;
 	// ~ End Combat Interface
 	
 protected:
 	virtual void BeginPlay() override;
+	
 	virtual void InitAbilitySystem();
+	
 	void InitCharacterAbility() const;
 	void InitCharacterAttributes() const;
 	

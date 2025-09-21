@@ -60,9 +60,9 @@ void ACharacterG::FacePrimaryTarget_Implementation()
 	SetActorRotation(MyRotation);
 }
 
-FTransform ACharacterG::GetProjectileSocketTransform_Implementation(FName InSocketName)
+FVector ACharacterG::GetProjectileSocketLocation_Implementation(FName InSocketName)
 {
-	return GetMesh()->GetSocketTransform(InSocketName);
+	return GetMesh()->GetSocketLocation(InSocketName);
 }
 
 void ACharacterG::BeginPlay()
@@ -80,9 +80,6 @@ void ACharacterG::InitCharacterAbility() const
 	UAbilitySystemComponentG* ASC = CastChecked<UAbilitySystemComponentG>(AbilitySystemComponent);
 
 	if (StartupAbilities.IsEmpty()) return;
-
-	//TODO: 서버 Client 실행 체크하기
-	if (!HasAuthority()) return; 	
 
 	ASC->InitAbility(StartupAbilities);
 }
