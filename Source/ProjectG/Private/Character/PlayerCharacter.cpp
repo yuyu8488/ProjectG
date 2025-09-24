@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Player/PlayerControllerG.h"
 #include "Player/PlayerStateG.h"
 #include "UI/MainHUD.h"
@@ -60,11 +61,18 @@ void APlayerCharacter::OnRep_PlayerState()
 
 }
 
+void APlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APlayerCharacter, LastInputDirection);
+}
+
 void APlayerCharacter::UpdateTargets_Implementation()
 {
 	CombatTargets.Empty();
 
-	// 주변 일정반경에 있는 모든 적을 찾음
+	// 일정반경에 있는 모든 적을 배열에 저장.
 	TArray<AActor*> FoundEnemyActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery3);
@@ -85,18 +93,17 @@ void APlayerCharacter::UpdateTargets_Implementation()
 
 void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 {	
-	AActor* BestTarget = nullptr;
-	float BestScore = -1.f;
-	
 	//TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
 	// 이동입력이 없을때는 Alignment 점수계산은 빼는게 좋을듯?
-
+	
 	/* 이동입력이 없다
 	 * 1. Primary Target이 존재하는가? 
 	 *  ->(1) 존재한다. >> 
 	 *  ->(2) 존재하지 않는다. >> 
-	 * 
 	 */
+
+	AActor* BestTarget = nullptr;
+	float BestScore = -1.f;
 
 	if (LastInputDirection == FVector::ZeroVector)
 	{
@@ -129,28 +136,6 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 				BestScore = EnemyScore;
 				BestTarget = Enemy;
 			}
-
-			{			
-				FString DebugText = FString::Printf(
-					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
-					DistanceScore,AlignmentDot,EnemyScore);
-				FColor DebugTextColor = FColor::White;
-				if (Enemy == PrimaryCombatTarget.Get())
-				{
-					DebugText += TEXT("\n** PRIMARY TARGET **");
-					DebugTextColor =FColor::Red; 
-				}
-				
-				DrawDebugString(
-					GetWorld(),
-					Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
-					DebugText,
-					nullptr,
-					DebugTextColor,
-					1.0f,
-					false,
-					1.5f);
-			}
 		}
 		PrimaryCombatTarget = BestTarget;
 	}
@@ -171,7 +156,7 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			// 입력 방향으로 설정한 각도에 있는 적만 고려
 			// 두 벡터의 크기가 모두 1일때, 내적의 결과는 두 벡터가 이른 각도의 코사인 값과 같다. (결과는 -1, 1 사잇값 / 그래프를 보면 알수 있다 / -90도~90도 양수 >> 정면)
 			const float AlignmentDot = FVector::DotProduct(NormalizedInputDirection, DirectionToEnemy.GetSafeNormal());
-			const float AngleInRadians = FMath::DegreesToRadians(TargetSearchFieldOfView / 2.f); // <135도---|----135도> 중심으로 부터 최대 각도 
+			const float AngleInRadians = FMath::DegreesToRadians(TargetSearchFieldOfView * 0.5f); // <135도---|----135도> 중심으로 부터 최대 각도 
 			const float AlignmentForTargeting = FMath::Cos(AngleInRadians);
 			if (AlignmentDot < AlignmentForTargeting) continue; 
 
@@ -180,54 +165,8 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			const float DistanceScore = 1.f - (DistanceToEnemy / TargetSearchRadius);
 			const float EnemyScore = (Enemy == PrimaryCombatTarget) ?
 			((DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight)) * (1 + TargetSearchPrimaryTargetWeight)
-				:(DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight);
-
-			{			
-				FString DebugText = FString::Printf(
-					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
-					DistanceScore,AlignmentDot,EnemyScore);
-				FColor DebugTextColor = FColor::White;
-				if (Enemy == PrimaryCombatTarget)
-				{
-					DebugText += TEXT("\n** PRIMARY TARGET **");
-					DebugTextColor =FColor::Red; 
-				}
-				
-				DrawDebugString(
-					GetWorld(),
-					Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
-					DebugText,
-					nullptr,
-					DebugTextColor,
-					1.0f,
-					false,
-					1.5f);
-			}
-
-			/*====================점수 테스트용 텍스트 출력=================*/
-			/*{			
-				FString DebugText = FString::Printf(
-					TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
-					DistanceScore,AlignmentDot,EnemyScore);
-				FColor DebugTextColor = FColor::White;
-				if (Enemy == PrimaryCombatTarget)
-				{
-					DebugText += TEXT("\n** PRIMARY TARGET **");
-					DebugTextColor =FColor::Red; 
-				}
-				
-				DrawDebugString(
-					GetWorld(),
-					Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
-					DebugText,
-					nullptr,
-					DebugTextColor,
-					1.0f,
-					false,
-					1.5f);
-			}*/
-			/*====================점수 테스트용 텍스트 출력=================*/
-		
+				: (DistanceScore * TargetSearchDistanceWeight) + (AlignmentDot * TargetSearchAlignmentWeight);
+					
 			if (EnemyScore > BestScore)
 			{
 				BestScore = EnemyScore;
@@ -235,6 +174,29 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 			}
 		}
 		PrimaryCombatTarget = BestTarget;
+		/*====================점수 테스트용 텍스트 출력=================*/
+		/*{			
+			FString DebugText = FString::Printf(
+				TEXT("Distance Score: %.2f\n Align Score: %.2f\n Score: %.2f"),
+				DistanceScore,AlignmentDot,EnemyScore);
+			FColor DebugTextColor = FColor::White;
+			if (Enemy == PrimaryCombatTarget)
+			{
+				DebugText += TEXT("\n** PRIMARY TARGET **");
+				DebugTextColor =FColor::Red; 
+			}
+			
+			DrawDebugString(
+				GetWorld(),
+				Enemy->GetActorLocation() + FVector(0.f,0.f, 100.f),
+				DebugText,
+				nullptr,
+				DebugTextColor,
+				1.0f,
+				false,
+				1.5f);
+		}*/
+		/*====================점수 테스트용 텍스트 출력=================*/
 	}
 }
 

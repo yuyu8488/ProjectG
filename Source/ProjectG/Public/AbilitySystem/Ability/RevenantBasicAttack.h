@@ -28,9 +28,6 @@ protected:
 private:
 	UFUNCTION()
 	void OnFireEvent(FGameplayEventData InEventData);
-
-	UPROPERTY()
-	TObjectPtr<AActor> TargetActor = nullptr;
 };
 
 

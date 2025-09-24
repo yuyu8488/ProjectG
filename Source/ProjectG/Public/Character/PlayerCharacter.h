@@ -17,6 +17,7 @@ public:
 	APlayerCharacter();
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// Combat Interface
 	virtual void UpdateTargets_Implementation() override;
@@ -37,7 +38,7 @@ private:
 	TObjectPtr<class USpringArmComponent> SpringArm;
 	
 	// Move Input 추적
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	FVector LastInputDirection = FVector::ZeroVector;
 	
 	//TODO: TargetSearch 구조체로 정리하기

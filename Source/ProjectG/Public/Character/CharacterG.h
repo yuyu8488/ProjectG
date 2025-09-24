@@ -17,7 +17,7 @@ class PROJECTG_API ACharacterG : public ACharacter, public IAbilitySystemInterfa
 
 public:
 	ACharacterG();
-	
+
 	// AbilitySystem Interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	// ~End AbilitySystem Interface
@@ -27,8 +27,8 @@ public:
 	virtual void SetInCombat_Implementation(const bool InCombat) override;
 	virtual void UpdateTargets_Implementation() override;
 	virtual void UpdatePrimaryTarget_Implementation() override;
+	virtual void FacePrimaryTargetWithMotionWarping_Implementation() override;
 	virtual AActor* GetPrimaryTarget_Implementation() override;
-	virtual void FacePrimaryTarget_Implementation() override;
 	virtual FVector GetProjectileSocketLocation_Implementation(FName InSocketName) override;
 	// ~ End Combat Interface
 	
@@ -42,6 +42,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, Category="AbilitySystem")
 	TObjectPtr<class UAbilitySystemComponent> AbilitySystemComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UMotionWarpingComponent> MotionWarpingComponent;
 	
 	UPROPERTY(VisibleAnywhere, Category="AbilitySystem")
 	TObjectPtr<class UAttributeSet> AttributeSet;

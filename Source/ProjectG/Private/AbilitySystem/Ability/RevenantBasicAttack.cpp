@@ -17,13 +17,12 @@ void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 	
-	// 타겟 검색
-	if (ActorInfo->AvatarActor.Get()->Implements<UCombatInterface>())
+	// 타겟 탐색
+	if (GetAvatarActorFromActorInfo()->HasAuthority() && ActorInfo->AvatarActor.Get()->Implements<UCombatInterface>())
 	{
 		ICombatInterface::Execute_UpdateTargets(ActorInfo->AvatarActor.Get());
 		ICombatInterface::Execute_UpdatePrimaryTarget(ActorInfo->AvatarActor.Get());
-		TargetActor = ICombatInterface::Execute_GetPrimaryTarget(ActorInfo->AvatarActor.Get());
-		ICombatInterface::Execute_FacePrimaryTarget(ActorInfo->AvatarActor.Get());
+		ICombatInterface::Execute_FacePrimaryTargetWithMotionWarping(ActorInfo->AvatarActor.Get());
 	}
 	
 	// 쿨타임, 소모자원 확인. 
@@ -111,7 +110,7 @@ void URevenantBasicAttack::ResetCombo()
 
 void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 {
-	//서버에서만 스폰
+	// 일단 서버에서만 스폰
 	if (!GetAvatarActorFromActorInfo()->HasAuthority()) return;
 	
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetCurrentActorInfo()->AvatarActor.Get());
@@ -119,18 +118,16 @@ void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 	{
 		return;
 	}
-
-	// TODO: Projectile Spawn 설정 다시
-	if (TargetActor@@@@@@@@@@@@@@@@@)
+	
+	if (AActor* TargetActor = ICombatInterface::Execute_GetPrimaryTarget(OwnerCharacter))
 	{
 		const FVector SocketLocation = ICombatInterface::Execute_GetProjectileSocketLocation(OwnerCharacter, SpawnSocketName);
 		FRotator Rotation = (TargetActor->GetActorLocation() - SocketLocation).Rotation();
 
 		FTransform SpawnTransform;
 		SpawnTransform.SetLocation(SocketLocation);
-		SpawnTransform.SetRotation(Rotation.Quaternion());		
+		SpawnTransform.SetRotation(Rotation.Quaternion());	 	
 		
-
 		AProjectile* Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(
 		ProjectileClass,
 		SpawnTransform,

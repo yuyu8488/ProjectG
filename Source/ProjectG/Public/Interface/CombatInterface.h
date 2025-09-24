@@ -38,7 +38,7 @@ public:
 	AActor* GetPrimaryTarget();
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void FacePrimaryTarget();
+	void FacePrimaryTargetWithMotionWarping();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FVector GetProjectileSocketLocation(FName InSocketName);

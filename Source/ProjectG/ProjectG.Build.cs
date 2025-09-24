@@ -11,7 +11,7 @@ public class ProjectG : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] 
 		{
 			"Core", "CoreUObject", "Engine", "InputCore",
-			"EnhancedInput", "GameplayAbilities"
+			"EnhancedInput", "GameplayAbilities" , "MotionWarping"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] 

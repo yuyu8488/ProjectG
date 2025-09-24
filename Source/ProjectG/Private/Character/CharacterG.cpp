@@ -4,14 +4,17 @@
 #include "Character/CharacterG.h"
 
 #include "AbilitySystem/AbilitySystemComponentG.h"
+#include "MotionWarpingComponent.h"
 #include "AbilitySystem/AttributeSetG.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ACharacterG::ACharacterG()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	MotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>("MotionWarpingComponent");
 }
 
 UAbilitySystemComponent* ACharacterG::GetAbilitySystemComponent() const
@@ -44,20 +47,24 @@ AActor* ACharacterG::GetPrimaryTarget_Implementation()
 	return PrimaryCombatTarget;
 }
 
-void ACharacterG::FacePrimaryTarget_Implementation()
+void ACharacterG::FacePrimaryTargetWithMotionWarping_Implementation()
 {
-	if (PrimaryCombatTarget == nullptr) return;
-
+	if (PrimaryCombatTarget == nullptr || MotionWarpingComponent == nullptr)
+	{
+		return;
+	}
+	
 	const FVector MyLocation = GetActorLocation();
-	const FVector TargetLocation = PrimaryCombatTarget->GetTargetLocation();
-
-	// 타겟을 바라보는 회전값 계산
+	const FVector TargetLocation = PrimaryCombatTarget->GetActorLocation();
 	const FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(MyLocation, TargetLocation);
 
-	// 캐릭터의 Yaw값만 수정
-	FRotator MyRotation = GetActorRotation();
-	MyRotation.Yaw = LookAtRotation.Yaw;
-	SetActorRotation(MyRotation);
+	// Motion Warping 설정
+	FMotionWarpingTarget WarpingTarget;
+	WarpingTarget.Name = FName("Target");
+	WarpingTarget.Location = TargetLocation;
+	WarpingTarget.Rotation = FRotator(0.f, LookAtRotation.Yaw, 0.f);
+
+	MotionWarpingComponent->AddOrUpdateWarpTarget(WarpingTarget);
 }
 
 FVector ACharacterG::GetProjectileSocketLocation_Implementation(FName InSocketName)
