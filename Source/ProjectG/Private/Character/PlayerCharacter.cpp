@@ -93,7 +93,7 @@ void APlayerCharacter::UpdateTargets_Implementation()
 
 void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 {	
-	//TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
+	// TODO: 이동입력이 없을떄? PrimaryTarget 선정하는 부분 다시 고려하기. PrimaryTarget이 있는경우 무조건 타겟으로 되게 하는게 좋을거 같다. 
 	// 이동입력이 없을때는 Alignment 점수계산은 빼는게 좋을듯?
 	
 	/* 이동입력이 없다
@@ -200,25 +200,39 @@ void APlayerCharacter::UpdatePrimaryTarget_Implementation()
 	}
 }
 
+void APlayerCharacter::SetLastInputDirection(const FVector& InDirection)
+{
+	// 클라이언트에서 먼저 로컬로 업데이트하여 즉각적인 반응 (클라이언트 예측)
+	LastInputDirection = InDirection;
+
+	// 서버로 값 전송(클라이언트인 경우에만)
+	// GetLocalRole() : 모든 액터에 대해 ROLE_Authority를 반환한다.
+	// ROLE_Authority : 서버만이 이 권한을 가진다.
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		Server_SetLastInputDirection(InDirection);
+	}
+}
+
+void APlayerCharacter::Server_SetLastInputDirection_Implementation(const FVector& InDirection)
+{
+	LastInputDirection = InDirection;
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void APlayerCharacter::InitAbilitySystem()
 {
-	/*
-	 * State에 AbilitySystemComponent와 AttributeSet를 두는 이유
-	 * 캐릭터가 죽으면 정보가 사라지지만, State에 저장된 정보는 세션종료시까지 유지됨.
-	 */
-		
+	 // State에 AbilitySystemComponent와 AttributeSet를 두는 이유
+	 // 캐릭터가 죽으면 정보가 사라지지만, State에 저장된 정보는 세션종료시까지 유지됨.
+	
 	APlayerStateG* PlayerStateG = GetPlayerState<APlayerStateG>();
 	if (PlayerStateG == nullptr) return;
 	
 	PlayerStateG->GetAbilitySystemComponent()->InitAbilityActorInfo(PlayerStateG, this);
-
-	// ASC, AS caching 
 	AbilitySystemComponent = PlayerStateG->GetAbilitySystemComponent();
 	AttributeSet = PlayerStateG->GetAttributeSet();
 }

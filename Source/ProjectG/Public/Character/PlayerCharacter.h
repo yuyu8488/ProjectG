@@ -24,7 +24,10 @@ public:
 	virtual void UpdatePrimaryTarget_Implementation() override;
 	// ~ End Combat Interface
 
-	void SetLastInputDirection(const FVector& InDirection) {LastInputDirection = InDirection;}
+	void SetLastInputDirection(const FVector& InDirection);
+
+	UFUNCTION(Server, Reliable)
+	void Server_SetLastInputDirection(const FVector& InDirection);
 	
 protected:
 	virtual void BeginPlay() override;
@@ -37,7 +40,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class USpringArmComponent> SpringArm;
 	
-	// Move Input 추적
+	// 입력 방향 추적
 	UPROPERTY(Replicated)
 	FVector LastInputDirection = FVector::ZeroVector;
 	

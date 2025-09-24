@@ -16,21 +16,6 @@ void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
                                            const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	
-	// 타겟 탐색
-	if (GetAvatarActorFromActorInfo()->HasAuthority() && ActorInfo->AvatarActor.Get()->Implements<UCombatInterface>())
-	{
-		ICombatInterface::Execute_UpdateTargets(ActorInfo->AvatarActor.Get());
-		ICombatInterface::Execute_UpdatePrimaryTarget(ActorInfo->AvatarActor.Get());
-		ICombatInterface::Execute_FacePrimaryTargetWithMotionWarping(ActorInfo->AvatarActor.Get());
-	}
-	
-	// 쿨타임, 소모자원 확인. 
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
 
 	// ASC 확인
 	UAbilitySystemComponentG* ASC = Cast<UAbilitySystemComponentG>(GetAbilitySystemComponentFromActorInfo_Ensured());
@@ -39,7 +24,22 @@ void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+
+	// 쿨타임, 소모자원 확인. 
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
 	
+	// 타겟 탐색
+	if (ActorInfo->AvatarActor.Get()->Implements<UCombatInterface>())
+	{
+		ICombatInterface::Execute_UpdateTargets(ActorInfo->AvatarActor.Get());
+		ICombatInterface::Execute_UpdatePrimaryTarget(ActorInfo->AvatarActor.Get());
+		ICombatInterface::Execute_FacePrimaryTargetWithMotionWarping(ActorInfo->AvatarActor.Get());
+	}
+
 	// #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 	// CreatePlayMontageAndWaitProxy : 비동기작업, Proxy(대리자) 객체 생성, 델리게이트(OnCompleted, OnInterrupted) 가능.
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
@@ -110,6 +110,8 @@ void URevenantBasicAttack::ResetCombo()
 
 void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 {
+	// TODO: 클라이언트로 실행될떄와, 서버로 실행될때 적용되는 데미지가 다름..
+	
 	// 일단 서버에서만 스폰
 	if (!GetAvatarActorFromActorInfo()->HasAuthority()) return;
 	
