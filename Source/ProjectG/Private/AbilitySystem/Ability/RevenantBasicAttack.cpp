@@ -79,12 +79,7 @@ void URevenantBasicAttack::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 void URevenantBasicAttack::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
-{
-	if (bWasCancelled)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RevenantBasicAttack was canceled!!!!"));
-	}
-	
+{	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 

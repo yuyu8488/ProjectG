@@ -71,11 +71,10 @@ void APlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 void APlayerCharacter::UpdateTargets_Implementation()
 {
 	CombatTargets.Empty();
-
+	
 	// 일정반경에 있는 모든 적을 배열에 저장.
 	TArray<AActor*> FoundEnemyActors;
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery3);
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this);
 

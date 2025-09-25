@@ -42,15 +42,13 @@ void AProjectile::Destroyed()
 void AProjectile::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, 
 										int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!OtherActor || OtherActor == this || !OtherComp)
+	if (!OtherActor || GetInstigator() == OtherActor)
 	{
-		return; // Ignore self and invalid actors
+		return;
 	}
 
 	if (OtherActor && OtherActor->Implements<UCombatInterface>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Projectile hit: %s"), *OtherActor->GetName());
-
 		if (HasAuthority())
 		{
 			// Apply damage effect to the target actor
