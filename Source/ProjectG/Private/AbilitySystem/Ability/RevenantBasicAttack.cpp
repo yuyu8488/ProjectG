@@ -107,8 +107,7 @@ void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 {
 	// TODO: 클라이언트로 실행될떄와, 서버로 실행될때 적용되는 데미지가 다름..
 	
-	// 일단 서버에서만 스폰
-	if (!GetAvatarActorFromActorInfo()->HasAuthority()) return;
+	//if (!GetAvatarActorFromActorInfo()->HasAuthority()) return;
 	
 	ACharacter* OwnerCharacter = Cast<ACharacter>(GetCurrentActorInfo()->AvatarActor.Get());
 	if (!OwnerCharacter || !OwnerCharacter->Implements<UCombatInterface>())
@@ -135,8 +134,10 @@ void URevenantBasicAttack::OnFireEvent(FGameplayEventData InEventData)
 		// 발사체에 DamageEffectParams 설정.
 		FDamageEffectParams ProjectileDamageEffectParams = MakeDamageEffectParamsFromClassDefaults(TargetActor, FGameplayTagG::Get().Ability_BasicAttack);
 		Projectile->SetDamageEffectParams(ProjectileDamageEffectParams);
-
 		Projectile->FinishSpawning(SpawnTransform);
+
+		UE_LOG(LogTemp, Warning, TEXT("BaseDamage: (%f)"), ProjectileDamageEffectParams.BaseDamage);
+		UE_LOG(LogTemp, Warning, TEXT("DamageMultiplier: (%f)"), ProjectileDamageEffectParams.DamageMultiplier);
 	
 		// 다음 Fire 이벤트를 받기위해 테스크 재생성.
 		UAbilityTask_WaitGameplayEvent* WaitFireEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(

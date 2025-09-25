@@ -12,10 +12,18 @@
 
 FGameplayEffectContextHandle UAbilitySystemLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
 {
-	if (!DamageEffectParams.GameplayEffectClass) return FGameplayEffectContextHandle();
+	if (!DamageEffectParams.GameplayEffectClass)
+	{
+		return FGameplayEffectContextHandle();
+	}
 	
 	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();
-	
+
+	if (!SourceAvatarActor->HasAuthority())
+	{
+		return FGameplayEffectContextHandle();
+	}
+
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);
 	
@@ -51,7 +59,6 @@ FGameplayEffectContextHandle UAbilitySystemLibrary::ApplyDamageEffect(const FDam
 		TargetCombatInterface->Execute_SetInCombat(DamageEffectParams.TargetAbilitySystemComponent->GetAvatarActor(), true);
 	}
 	
-	//
 	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	return EffectContextHandle;
 }
